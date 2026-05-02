@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Night Market Juice Rush</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, "Trebuchet MS", Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #1a1235 0%, #2b1b4f 45%, #3b224b 100%);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .screen {
+      width: min(1180px, 96vw);
+      height: min(760px, 94vh);
+      position: relative;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5);
+      border: 3px solid rgba(255, 255, 255, 0.18);
+      background: #201438;
+    }
+
+    .hidden { display: none !important; }
+
+    /* START SCREEN */
+    #startScreen {
+      height: 100%;
+      padding: 56px;
+      background:
+        radial-gradient(circle at 22% 18%, rgba(255, 196, 87, 0.35), transparent 22%),
+        radial-gradient(circle at 82% 12%, rgba(255, 92, 103, 0.28), transparent 23%),
+        linear-gradient(180deg, #241445 0%, #120b24 100%);
+      display: grid;
+      grid-template-columns: 1fr 0.9fr;
+      align-items: center;
+      gap: 36px;
+    }
+
+    .title-tag {
+      display: inline-block;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: rgba(255, 209, 102, 0.18);
+      color: #ffd166;
+      font-weight: 800;
+      letter-spacing: 1px;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    h1 {
+      font-size: clamp(52px, 7vw, 92px);
+      line-height: 0.9;
+      margin-bottom: 22px;
+      text-shadow: 0 8px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    h1 span { color: #ffd166; }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.65;
+      font-size: 19px;
+      margin-bottom: 30px;
+      max-width: 560px;
+    }
+
+    .primary-btn, .secondary-btn {
+      border: 0;
+      cursor: pointer;
+      padding: 16px 28px;
+      border-radius: 18px;
+      font-size: 18px;
+      font-weight: 900;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .primary-btn:hover, .secondary-btn:hover, .station-btn:hover, .fruit-btn:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.06);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #ffd166, #ff9f1c);
+      color: #2c1600;
+      box-shadow: 0 8px 0 #9b5c00;
+    }
+
+    .secondary-btn {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+      margin-left: 10px;
+    }
+
+    .preview-card {
+      padding: 28px;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .preview-counter {
+      height: 260px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, #f7b267 0%, #d9772a 42%, #7b3f1d 43%, #5f3019 100%);
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 -12px 0 rgba(0,0,0,.15);
+    }
+
+    .preview-sign {
+      position: absolute;
+      top: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2f1b52;
+      color: #ffd166;
+      padding: 14px 24px;
+      border-radius: 16px;
+      font-weight: 900;
+      font-size: 24px;
+      white-space: nowrap;
+    }
+
+    .preview-items {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 38px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .fake-fruit {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      background: rgba(255,255,255,.85);
+      color: #333;
+      font-size: 34px;
+      box-shadow: 0 8px 0 rgba(0,0,0,.2);
+    }
+
+    /* GAME SCENE */
+    #gameScreen {
+      height: 100%;
+      background:
+        linear-gradient(180deg, rgba(255, 196, 87, 0.16), transparent 38%),
+        linear-gradient(180deg, #241445 0%, #241445 43%, #6c3b20 43%, #7a421f 100%);
+      position: relative;
+      padding: 22px;
+    }
+
+    .top-hud {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 5;
+    }
+
+    .hud-pill {
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.18);
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+
+    .view-layer {
+      position: absolute;
+      inset: 0;
+      padding: 22px;
+    }
+
+    .front-counter-scene {
+      height: 100%;
+      position: relative;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 209, 102, .20), transparent 26%),
+        linear-gradient(180deg, #241445 0%, #241445 68%, #8a4d27 69%, #6c371b 100%);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+
+    .shop-sign {
+      position: absolute;
+      top: 82px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 18px 36px;
+      border-radius: 18px;
+      background: #ffb703;
+      color: #351804;
+      font-size: 34px;
+      font-weight: 900;
+      box-shadow: 0 10px 0 rgba(0,0,0,.25);
+    }
+
+    .customer-stage {
+      position: absolute;
+      top: 82px;
+      left: 0;
+      right: 0;
+      height: 250px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 34px;
+      z-index: 2;
+    }
+
+    .customer-stage.front-only {
+      top: 190px;
+      height: 300px;
+      transform: scale(1.18);
+      align-items: center;
+    }
+
+    .make-btn {
+      position: absolute;
+      left: 50%;
+      bottom: 42px;
+      transform: translateX(-50%);
+      z-index: 5;
+      font-size: 22px;
+      padding: 18px 42px;
+    }
+
+    .make-btn:hover {
+      transform: translateX(-50%) translateY(-3px);
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 84px;
+      left: 28px;
+      z-index: 8;
+      border: none;
+      cursor: pointer;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+      color: white;
+      font-weight: 900;
+      border: 1px solid rgba(255,255,255,.22);
+    }
+
+    .customer {
+      width: 150px;
+      height: 230px;
+      border-radius: 70px 70px 26px 26px;
+      background: linear-gradient(180deg, #f4c29f 0 34%, #4cc9f0 35% 100%);
+      border: 5px solid rgba(255,255,255,.22);
+      position: relative;
+      box-shadow: 0 20px 35px rgba(0,0,0,.28);
+    }
+
+    .customer::before {
+      content: "";
+      position: absolute;
+      width: 92px;
+      height: 54px;
+      border-radius: 48px 48px 18px 18px;
+      background: #3a1f16;
+      top: -8px;
+      left: 22px;
+    }
+
+    .customer::after {
+      content: "•   •";
+      position: absolute;
+      top: 58px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: #2c1600;
+      font-size: 28px;
+      letter-spacing: 14px;
+    }
+
+    .speech {
+      width: 430px;
+      min-height: 160px;
+      padding: 24px;
+      border-radius: 28px 28px 28px 8px;
+      background: #fff8e6;
+      color: #2b1608;
+      box-shadow: 0 12px 0 rgba(0,0,0,.25);
+      position: relative;
+    }
+
+    .speech small {
+      display: block;
+      color: #e76f00;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .speech h2 {
+      font-size: 34px;
+      margin-bottom: 16px;
+    }
+
+    .patience-bar {
+      width: 100%;
+      height: 18px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.14);
+      overflow: hidden;
+    }
+
+    .patience-fill {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #06d6a0, #ffd166, #ef476f);
+      transition: width .2s linear;
+    }
+
+    .counter {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 28px;
+      height: 600px;
+      border-radius: 34px;
+      background: linear-gradient(180deg, #b96b36 0%, #8a4d27 100%);
+      box-shadow: inset 0 12px 0 rgba(255,255,255,.12), 0 -18px 35px rgba(0,0,0,.18);
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr 1.15fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+      z-index: 3;
+    }
+
+    .station {
+      border-radius: 26px;
+      background: rgba(255,255,255,.14);
+      border: 2px solid rgba(255,255,255,.16);
+      padding: 16px;
+      box-shadow: inset 0 6px 0 rgba(255,255,255,.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .station-title {
+      color: #ffd166;
+      font-weight: 900;
+      margin-bottom: 12px;
+      font-size: 17px;
+    }
+
+    .fruit-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .fruit-btn, .station-btn {
+      border: 0;
+      cursor: pointer;
+      border-radius: 18px;
+      transition: transform .15s ease, filter .15s ease;
+      font-weight: 900;
+      box-shadow: 0 6px 0 rgba(0,0,0,.24);
+    }
+
+    .fruit-btn {
+      height: 62px;
+      background: #fff3d1;
+      color: #44220b;
+      font-size: 25px;
+    }
+
+    .station-btn {
+      width: 100%;
+      min-height: 48px;
+      background: #fff8e6;
+      color: #341806;
+      margin-top: 10px;
+      font-size: 15px;
+    }
+
+    .station-btn.active {
+      outline: 4px solid #06d6a0;
+      background: #d8fff2;
+    }
+
+    .workspace {
+      width: 100%;
+      flex: 1;
+      border-radius: 20px;
+      background: rgba(0,0,0,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px;
+      color: rgba(255,255,255,.9);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    .board-surface {
+      width: 160px;
+      height: 108px;
+      background: #f2c078;
+      border-radius: 20px;
+      box-shadow: inset 0 -8px 0 rgba(0,0,0,.12), 0 8px 0 rgba(0,0,0,.24);
+      display: grid;
+      place-items: center;
+      color: #3b1b0f;
+      font-size: 18px;
+    }
+
+    .blender-machine {
+      width: 118px;
+      height: 160px;
+      position: relative;
+    }
+
+    .blender-jar {
+      width: 92px;
+      height: 102px;
+      margin: 0 auto;
+      border-radius: 20px 20px 28px 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.8), rgba(255,255,255,.3));
+      border: 5px solid rgba(255,255,255,.85);
+      display: grid;
+      place-items: center;
+      color: #331806;
+      font-size: 14px;
+      overflow: hidden;
+    }
+
+    .juice-liquid {
+      width: 100%;
+      align-self: end;
+      height: 0%;
+      background: linear-gradient(180deg, #ffd166, #ff8c42);
+      transition: height .25s ease;
+    }
+
+    .blender-base {
+      width: 118px;
+      height: 58px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #e9ecef, #adb5bd);
+      margin-top: -4px;
+      box-shadow: 0 8px 0 rgba(0,0,0,.25);
+    }
+
+    .blending { animation: shake .12s linear infinite; }
+
+    @keyframes shake {
+      0% { transform: translateX(-2px) rotate(-1deg); }
+      50% { transform: translateX(2px) rotate(1deg); }
+      100% { transform: translateX(-2px) rotate(-1deg); }
+    }
+
+    .cup-visual {
+      width: 96px;
+      height: 136px;
+      border-radius: 14px 14px 28px 28px;
+      border: 6px solid rgba(255,255,255,.85);
+      background: rgba(255,255,255,.25);
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 8px 0 rgba(0,0,0,.24);
+    }
+
+    .cup-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 0%;
+      background: linear-gradient(180deg, #ffd166, #ff8c42);
+      transition: height .25s ease;
+    }
+
+    .serve-btn {
+      width: 100%;
+      min-height: 58px;
+      background: linear-gradient(135deg, #06d6a0, #4cc9f0);
+      color: #072b2c;
+      font-size: 18px;
+    }
+
+    .status-bar {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 86px;
+      min-width: 390px;
+      max-width: 80%;
+      padding: 12px 20px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.45);
+      text-align: center;
+      font-weight: 900;
+      z-index: 6;
+      border: 1px solid rgba(255,255,255,.15);
+    }
+
+    .modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.72);
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .modal-card {
+      width: min(520px, 90vw);
+      background: #fff8e6;
+      color: #2b1608;
+      border-radius: 30px;
+      padding: 34px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+      text-align: center;
+    }
+
+    .modal-card h2 {
+      font-size: 34px;
+      margin-bottom: 12px;
+    }
+
+    .modal-card p {
+      line-height: 1.6;
+      margin-bottom: 22px;
+      color: #57331c;
+    }
+
+    @media (max-width: 900px) {
+      #startScreen { grid-template-columns: 1fr; padding: 32px; }
+      .preview-card { display: none; }
+      .counter { grid-template-columns: repeat(2, 1fr); height: 430px; }
+      .status-bar { bottom: 480px; }
+      .customer-stage { transform: scale(.85); top: 62px; }
+    }
+  
+    /* FIXED ORDER SCREEN LAYOUT */
+    .shop-sign {
+      top: 56px;
+      padding: 10px 24px;
+      font-size: 24px;
+      border-radius: 14px;
+    }
+
+    .customer-stage.front-only {
+      top: 155px;
+      height: 330px;
+      transform: none;
+      align-items: center;
+      gap: 48px;
+    }
+
+    .customer {
+      width: 170px;
+      height: 250px;
+      background:
+        radial-gradient(circle at 38% 31%, #2a140d 0 5px, transparent 6px),
+        radial-gradient(circle at 62% 31%, #2a140d 0 5px, transparent 6px),
+        radial-gradient(ellipse at 50% 34%, #f4c29f 0 43%, transparent 44%),
+        linear-gradient(180deg, transparent 0 48%, #ff9f1c 49% 100%);
+      border-radius: 80px 80px 32px 32px;
+      border: 5px solid rgba(255,255,255,.25);
+      box-shadow: 0 20px 35px rgba(0,0,0,.28);
+      position: relative;
+    }
+
+    .customer::before {
+      content: "";
+      position: absolute;
+      width: 96px;
+      height: 42px;
+      border-radius: 44px 44px 18px 18px;
+      background: #3a1f16;
+      top: 16px;
+      left: 34px;
+    }
+
+    .customer::after {
+      content: "";
+      position: absolute;
+      width: 34px;
+      height: 10px;
+      border-radius: 0 0 30px 30px;
+      border-bottom: 5px solid #7a2e16;
+      top: 105px;
+      left: 64px;
+    }
+
+    .speech {
+      width: 470px;
+      min-height: 170px;
+      padding: 26px;
+    }
+
+    .make-btn {
+      bottom: 54px;
+      z-index: 10;
+    }
+
+    /* FIXED COUNTER SCREEN LAYOUT */
+    #counterView {
+      padding-top: 96px;
+    }
+
+    .papa-counter {
+      position: relative;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      width: 100%;
+      height: calc(100% - 24px);
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr 1fr 0.85fr;
+      gap: 18px;
+      padding: 18px;
+      border-radius: 28px;
+    }
+
+    .fruit-grid {
+      margin-top: 4px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .fruit-btn {
+      height: 70px;
+      font-size: 26px;
+    }
+
+    .station {
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .papa-counter {
+      overflow-y: auto;
+    }
+
+    .station-btn {
+      min-height: 44px;
+      margin-top: 8px;
+    }
+
+    .workspace {
+      min-height: 120px;
+      flex: 0 0 auto;
+    }
+
+    .status-bar {
+      top: 82px;
+      z-index: 9;
+    }
+
+    .back-btn {
+      top: 82px;
+      z-index: 10;
+    }
+
+    @media (max-width: 900px) {
+      .customer-stage.front-only {
+        transform: scale(.9);
+        top: 140px;
+      }
+      .papa-counter {
+        grid-template-columns: repeat(2, 1fr);
+        overflow-y: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen">
+    <section id="startScreen">
+      <div>
+        <div class="title-tag">COOKING GAME DEMO</div>
+        <h1>Night Market<br><span>Juice Rush</span></h1>
+        <p class="subtitle">
+          Take customer orders, prepare fruit drinks step by step, and serve fast before patience runs out.
+        </p>
+        <button class="primary-btn" onclick="startGame()">Start Game</button>
+        <button class="secondary-btn" onclick="openHowTo()">How to Play</button>
+      </div>
+
+      <div class="preview-card">
+        <div class="preview-counter">
+          <div class="preview-sign">鮮果果汁攤</div>
+          <div class="preview-items">
+            <div class="fake-fruit">🥭</div>
+            <div class="fake-fruit">🍓</div>
+            <div class="fake-fruit">🍌</div>
+            <div class="fake-fruit">🥤</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="hidden">
+      <div class="top-hud">
+        <div class="hud-pill">Money: $<span id="moneyText">0</span></div>
+        <div class="hud-pill">Combo: x<span id="comboText">0</span></div>
+        <div class="hud-pill">Hearts: <span id="heartsText">❤❤❤</span></div>
+        <div class="hud-pill">Customer: <span id="servedText">0</span>/<span id="targetText">8</span></div>
+      </div>
+
+      <div id="orderView" class="view-layer">
+        <div class="front-counter-scene">
+          <div class="shop-sign">鮮果果汁攤</div>
+          <div class="customer-stage front-only">
+            <div class="customer" id="customerAvatar"></div>
+            <div class="speech">
+              <small>CUSTOMER ORDER</small>
+              <h2 id="orderText">Mango Juice</h2>
+              <div class="patience-bar"><div class="patience-fill" id="patienceFill"></div></div>
+            </div>
+          </div>
+          <button class="primary-btn make-btn" onclick="goToCounter()">Make Drink</button>
+        </div>
+      </div>
+
+      <div id="counterView" class="view-layer hidden">
+        <button class="back-btn" onclick="goToOrderView()">← Order</button>
+        <div class="status-bar" id="statusText">Pick the fruit for the order.</div>
+
+        <div class="counter papa-counter">
+          <div class="station">
+            <div class="station-title">Fruit Tray</div>
+            <div class="fruit-grid" id="fruitGrid"></div>
+          </div>
+
+          <div class="station">
+            <div class="station-title">Cutting Board</div>
+            <div class="workspace">
+              <div class="board-surface" id="boardText">Empty</div>
+            </div>
+            <button class="station-btn" onclick="cutFruit()">Cut Fruit</button>
+          </div>
+
+          <div class="station">
+            <div class="station-title">Blender</div>
+            <div class="workspace">
+              <div class="blender-machine" id="blenderMachine">
+                <div class="blender-jar"><div class="juice-liquid" id="blenderFill"></div></div>
+                <div class="blender-base"></div>
+              </div>
+            </div>
+            <button class="station-btn" id="waterBtn" onclick="addLiquid('water')">Add Water</button>
+            <button class="station-btn" id="milkBtn" onclick="addLiquid('milk')">Add Milk</button>
+            <button class="station-btn" id="iceBtn" onclick="addIce()">Add Ice</button>
+            <button class="station-btn" onclick="blendDrink()">Blend</button>
+          </div>
+
+          <div class="station">
+            <div class="station-title">Cup Station</div>
+            <div class="workspace">
+              <div class="cup-visual"><div class="cup-fill" id="cupFill"></div></div>
+            </div>
+            <button class="station-btn" onclick="pourCup()">Pour</button>
+            <button class="station-btn serve-btn" onclick="serveDrink()">Serve</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="modal hidden" id="howModal">
+      <div class="modal-card">
+        <h2>How to Play</h2>
+        <p>
+          Read the customer's order. Pick the correct fruit, cut it, add water for juice or milk for smoothie,
+          add ice, blend, pour into the cup, then serve.
+        </p>
+        <button class="primary-btn" onclick="closeHowTo()">Got it</button>
+      </div>
+    </div>
+
+    <div class="modal hidden" id="endModal">
+      <div class="modal-card">
+        <h2 id="endTitle">Game Over</h2>
+        <p id="endSummary"></p>
+        <button class="primary-btn" onclick="restartGame()">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fruits = [
+      { id: "mango", name: "Mango", icon: "🥭" },
+      { id: "strawberry", name: "Strawberry", icon: "🍓" },
+      { id: "banana", name: "Banana", icon: "🍌" },
+      { id: "pineapple", name: "Pineapple", icon: "🍍" },
+      { id: "watermelon", name: "Watermelon", icon: "🍉" },
+      { id: "apple", name: "Apple", icon: "🍎" },
+      { id: "avocado", name: "Avocado", icon: "🥑" },
+      { id: "lemon", name: "Lemon", icon: "🍋" }
+    ];
+
+    const recipes = [
+      { name: "Mango Juice", fruits: ["mango"], liquid: "water" },
+      { name: "Watermelon Juice", fruits: ["watermelon"], liquid: "water" },
+      { name: "Pineapple Juice", fruits: ["pineapple"], liquid: "water" },
+      { name: "Apple Juice", fruits: ["apple"], liquid: "water" },
+      { name: "Lemon Juice", fruits: ["lemon"], liquid: "water" },
+      { name: "Mango Smoothie", fruits: ["mango"], liquid: "milk" },
+      { name: "Strawberry Smoothie", fruits: ["strawberry"], liquid: "milk" },
+      { name: "Banana Milkshake", fruits: ["banana"], liquid: "milk" },
+      { name: "Avocado Milk", fruits: ["avocado"], liquid: "milk" },
+      { name: "Strawberry Banana Smoothie", fruits: ["strawberry", "banana"], liquid: "milk" }
+    ];
+
+    let currentOrder;
+    let selectedFruits = [];
+    let cutDone = false;
+    let liquid = null;
+    let iceAdded = false;
+    let blended = false;
+    let poured = false;
+    let money = 0;
+    let combo = 0;
+    let hearts = 3;
+    let served = 0;
+    let targetCustomers = 8;
+    let patience = 100;
+    let patienceTimer;
+
+    const fruitGrid = document.getElementById("fruitGrid");
+    const statusText = document.getElementById("statusText");
+    const boardText = document.getElementById("boardText");
+    const blenderFill = document.getElementById("blenderFill");
+    const cupFill = document.getElementById("cupFill");
+    const patienceFill = document.getElementById("patienceFill");
+
+    function openHowTo() {
+      document.getElementById("howModal").classList.remove("hidden");
+    }
+
+    function closeHowTo() {
+      document.getElementById("howModal").classList.add("hidden");
+    }
+
+    function startGame() {
+      document.getElementById("startScreen").classList.add("hidden");
+      document.getElementById("gameScreen").classList.remove("hidden");
+      restartGame(false);
+    }
+
+    function restartGame(showStart = true) {
+      document.getElementById("endModal").classList.add("hidden");
+      money = 0;
+      combo = 0;
+      hearts = 3;
+      served = 0;
+      renderFruitButtons();
+      updateHud();
+      newCustomer();
+    }
+
+    function renderFruitButtons() {
+      fruitGrid.innerHTML = "";
+      fruits.forEach(fruit => {
+        const btn = document.createElement("button");
+        btn.className = "fruit-btn";
+        btn.innerHTML = `${fruit.icon}<br><span style="font-size:11px">${fruit.name}</span>`;
+        btn.onclick = () => pickFruit(fruit.id);
+        fruitGrid.appendChild(btn);
+      });
+    }
+
+    function goToCounter() {
+      document.getElementById("orderView").classList.add("hidden");
+      document.getElementById("counterView").classList.remove("hidden");
+    }
+
+    function goToOrderView() {
+      document.getElementById("counterView").classList.add("hidden");
+      document.getElementById("orderView").classList.remove("hidden");
+    }
+
+    function newCustomer() {
+      clearInterval(patienceTimer);
+      resetDrink();
+      currentOrder = recipes[Math.floor(Math.random() * recipes.length)];
+      document.getElementById("orderText").textContent = currentOrder.name;
+      patience = 100;
+      patienceFill.style.width = "100%";
+      statusText.textContent = "Pick the fruit for the order.";
+      goToOrderView();
+      patienceTimer = setInterval(() => {
+        patience -= 1.2;
+        patienceFill.style.width = `${Math.max(patience, 0)}%`;
+        if (patience <= 0) {
+          clearInterval(patienceTimer);
+          failOrder("Too slow! The customer left.");
+        }
+      }, 180);
+    }
+
+    function resetDrink() {
+      selectedFruits = [];
+      cutDone = false;
+      liquid = null;
+      iceAdded = false;
+      blended = false;
+      poured = false;
+      boardText.textContent = "Empty";
+      blenderFill.style.height = "0%";
+      cupFill.style.height = "0%";
+      document.getElementById("waterBtn").classList.remove("active");
+      document.getElementById("milkBtn").classList.remove("active");
+      document.getElementById("iceBtn").classList.remove("active");
+    }
+
+    function pickFruit(fruitId) {
+      if (selectedFruits.length >= 2) {
+        statusText.textContent = "Only up to 2 fruits for this demo.";
+        return;
+      }
+      selectedFruits.push(fruitId);
+      const names = selectedFruits.map(id => fruits.find(f => f.id === id).name).join(" + ");
+      boardText.textContent = names;
+      statusText.textContent = "Fruit placed on board. Now cut it.";
+    }
+
+    function cutFruit() {
+      if (selectedFruits.length === 0) {
+        statusText.textContent = "Pick fruit first.";
+        return;
+      }
+      cutDone = true;
+      boardText.textContent = "Sliced " + selectedFruits.map(id => fruits.find(f => f.id === id).name).join(" + ");
+      statusText.textContent = "Fruit cut. Add water or milk in the blender.";
+      blenderFill.style.height = "25%";
+    }
+
+    function addLiquid(type) {
+      if (!cutDone) {
+        statusText.textContent = "Cut the fruit before adding liquid.";
+        return;
+      }
+      liquid = type;
+      document.getElementById("waterBtn").classList.toggle("active", type === "water");
+      document.getElementById("milkBtn").classList.toggle("active", type === "milk");
+      blenderFill.style.height = "45%";
+      statusText.textContent = type === "water" ? "Water added. Add ice next." : "Milk added. Add ice next.";
+    }
+
+    function addIce() {
+      if (!liquid) {
+        statusText.textContent = "Add water or milk first.";
+        return;
+      }
+      iceAdded = true;
+      document.getElementById("iceBtn").classList.add("active");
+      blenderFill.style.height = "62%";
+      statusText.textContent = "Ice added. Blend the drink.";
+    }
+
+    function blendDrink() {
+      if (!iceAdded) {
+        statusText.textContent = "Add ice before blending.";
+        return;
+      }
+      const machine = document.getElementById("blenderMachine");
+      machine.classList.add("blending");
+      statusText.textContent = "Blending...";
+      setTimeout(() => {
+        machine.classList.remove("blending");
+        blended = true;
+        blenderFill.style.height = "80%";
+        statusText.textContent = "Drink blended. Pour it into the cup.";
+      }, 650);
+    }
+
+    function pourCup() {
+      if (!blended) {
+        statusText.textContent = "Blend the drink before pouring.";
+        return;
+      }
+      poured = true;
+      cupFill.style.height = "82%";
+      statusText.textContent = "Cup filled. Serve the customer!";
+    }
+
+    function serveDrink() {
+      if (!poured) {
+        statusText.textContent = "Pour the drink before serving.";
+        return;
+      }
+
+      const fruitCorrect = arraysMatch([...selectedFruits].sort(), [...currentOrder.fruits].sort());
+      const liquidCorrect = liquid === currentOrder.liquid;
+      const correct = fruitCorrect && liquidCorrect && cutDone && iceAdded && blended && poured;
+
+      clearInterval(patienceTimer);
+
+      if (correct) {
+        combo += 1;
+        const earned = 20 + combo * 5 + Math.floor(patience / 10);
+        money += earned;
+        served += 1;
+        statusText.textContent = `Correct! +$${earned}`;
+        updateHud();
+        if (served >= targetCustomers) {
+          endGame(true);
+        } else {
+          setTimeout(newCustomer, 900);
+        }
+      } else {
+        failOrder("Wrong recipe! Check the order carefully.");
+      }
+    }
+
+    function failOrder(message) {
+      hearts -= 1;
+      combo = 0;
+      statusText.textContent = message;
+      updateHud();
+      if (hearts <= 0) {
+        endGame(false);
+      } else {
+        setTimeout(newCustomer, 1000);
+      }
+    }
+
+    function updateHud() {
+      document.getElementById("moneyText").textContent = money;
+      document.getElementById("comboText").textContent = combo;
+      document.getElementById("heartsText").textContent = "❤".repeat(hearts) || "0";
+      document.getElementById("servedText").textContent = served;
+      document.getElementById("targetText").textContent = targetCustomers;
+    }
+
+    function endGame(won) {
+      clearInterval(patienceTimer);
+      document.getElementById("endTitle").textContent = won ? "Shop Closed!" : "Game Over";
+      document.getElementById("endSummary").textContent = won
+        ? `You served ${served} customers and earned $${money}. Great job!`
+        : `You served ${served} customers and earned $${money}. Try again!`;
+      document.getElementById("endModal").classList.remove("hidden");
+    }
+
+    function arraysMatch(a, b) {
+      if (a.length !== b.length) return false;
+      return a.every((value, index) => value === b[index]);
+    }
+  </script>
+</body>
+</html>
