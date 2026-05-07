@@ -717,6 +717,7 @@
         </p>
         <button class="primary-btn" onclick="startGame()">Start Game</button>
         <button class="secondary-btn" onclick="openHowTo()">How to Play</button>
+        <button class="secondary-btn" onclick="openRecipeBook()">View Recipes</button>
       </div>
 
       <div class="preview-card">
@@ -770,7 +771,7 @@
             <div class="workspace">
               <div class="board-surface" id="boardText">Empty</div>
             </div>
-            <button class="station-btn" onclick="cutFruit()">Cut Fruit</button>
+            <button class="station-btn" onclick="handleCutFruit()">Cut Fruit</button>
           </div>
 
           <div class="station">
@@ -781,10 +782,10 @@
                 <div class="blender-base"></div>
               </div>
             </div>
-            <button class="station-btn" id="waterBtn" onclick="addLiquid('water')">Add Water</button>
-            <button class="station-btn" id="milkBtn" onclick="addLiquid('milk')">Add Milk</button>
-            <button class="station-btn" id="iceBtn" onclick="addIce()">Add Ice</button>
-            <button class="station-btn" onclick="blendDrink()">Blend</button>
+            <button class="station-btn" id="waterBtn" onclick="handleAddLiquid('water')">Add Water</button>
+            <button class="station-btn" id="milkBtn" onclick="handleAddLiquid('milk')">Add Milk</button>
+            <button class="station-btn" id="iceBtn" onclick="handleAddIce()">Add Ice</button>
+            <button class="station-btn" onclick="handleBlend()">Blend</button>
           </div>
 
           <div class="station">
@@ -792,8 +793,8 @@
             <div class="workspace">
               <div class="cup-visual"><div class="cup-fill" id="cupFill"></div></div>
             </div>
-            <button class="station-btn" onclick="pourCup()">Pour</button>
-            <button class="station-btn serve-btn" onclick="serveDrink()">Serve</button>
+            <button class="station-btn" onclick="handlePour()">Pour</button>
+            <button class="station-btn serve-btn" onclick="handleServeDrink()">Serve</button>
           </div>
         </div>
       </div>
@@ -803,10 +804,32 @@
       <div class="modal-card">
         <h2>How to Play</h2>
         <p>
-          Read the customer's order. Pick the correct fruit, cut it, add water for juice or milk for smoothie,
-          add ice, blend, pour into the cup, then serve.
+          View the customer’s order, then make the correct drink according to the recipe. <br>
+          Pick the fruits, cut them, add water or milk, add ice, blend, pour into the cup, and serve. <br>
+          If the customer’s patience runs out, you will lose a heart.<br>
+          Serve drinks quickly to earn extra money and build combo bonuses.<br>
         </p>
         <button class="primary-btn" onclick="closeHowTo()">Got it</button>
+      </div>
+    </div>
+
+    
+    <div class="modal hidden" id="recipeModal">
+      <div class="modal-card">
+        <h2>Recipe Book</h2>
+
+        <div id="recipeList"
+          style="
+            text-align:left;
+            max-height:420px;
+            overflow-y:auto;
+            margin:20px 0;
+          ">
+        </div>
+
+        <button class="primary-btn" onclick="closeRecipeBook()">
+          Close
+        </button>
       </div>
     </div>
 
@@ -818,39 +841,9 @@
       </div>
     </div>
   </div>
+  <script src="recipe_logic.js"></script>
 
   <script>
-    const fruits = [
-      { id: "mango", name: "Mango", icon: "🥭" },
-      { id: "strawberry", name: "Strawberry", icon: "🍓" },
-      { id: "banana", name: "Banana", icon: "🍌" },
-      { id: "pineapple", name: "Pineapple", icon: "🍍" },
-      { id: "watermelon", name: "Watermelon", icon: "🍉" },
-      { id: "apple", name: "Apple", icon: "🍎" },
-      { id: "avocado", name: "Avocado", icon: "🥑" },
-      { id: "lemon", name: "Lemon", icon: "🍋" }
-    ];
-
-    const recipes = [
-      { name: "Mango Juice", fruits: ["mango"], liquid: "water" },
-      { name: "Watermelon Juice", fruits: ["watermelon"], liquid: "water" },
-      { name: "Pineapple Juice", fruits: ["pineapple"], liquid: "water" },
-      { name: "Apple Juice", fruits: ["apple"], liquid: "water" },
-      { name: "Lemon Juice", fruits: ["lemon"], liquid: "water" },
-      { name: "Mango Smoothie", fruits: ["mango"], liquid: "milk" },
-      { name: "Strawberry Smoothie", fruits: ["strawberry"], liquid: "milk" },
-      { name: "Banana Milkshake", fruits: ["banana"], liquid: "milk" },
-      { name: "Avocado Milk", fruits: ["avocado"], liquid: "milk" },
-      { name: "Strawberry Banana Smoothie", fruits: ["strawberry", "banana"], liquid: "milk" }
-    ];
-
-    let currentOrder;
-    let selectedFruits = [];
-    let cutDone = false;
-    let liquid = null;
-    let iceAdded = false;
-    let blended = false;
-    let poured = false;
     let money = 0;
     let combo = 0;
     let hearts = 3;
@@ -874,13 +867,41 @@
       document.getElementById("howModal").classList.add("hidden");
     }
 
+    function openRecipeBook() {
+      const recipeList = document.getElementById("recipeList");
+
+      recipeList.innerHTML = "";
+
+      getAllRecipes().forEach(recipe => {
+        const div = document.createElement("div");
+
+        div.style.padding = "12px";
+        div.style.marginBottom = "10px";
+        div.style.borderRadius = "14px";
+        div.style.background = "rgba(0,0,0,.06)";
+
+      div.innerHTML = `
+      <strong>${recipe.name}</strong><br>
+      ${recipe.fruits.join(" + ")} + ${recipe.liquid} + ice
+      `;
+
+        recipeList.appendChild(div);
+      });
+
+      document.getElementById("recipeModal").classList.remove("hidden");
+    }
+
+    function closeRecipeBook() {
+      document.getElementById("recipeModal").classList.add("hidden");
+    }
+
     function startGame() {
       document.getElementById("startScreen").classList.add("hidden");
       document.getElementById("gameScreen").classList.remove("hidden");
-      restartGame(false);
+      restartGame();
     }
 
-    function restartGame(showStart = true) {
+    function restartGame() {
       document.getElementById("endModal").classList.add("hidden");
       money = 0;
       combo = 0;
@@ -893,11 +914,12 @@
 
     function renderFruitButtons() {
       fruitGrid.innerHTML = "";
-      fruits.forEach(fruit => {
+
+      FRUITS.forEach(fruit => {
         const btn = document.createElement("button");
         btn.className = "fruit-btn";
         btn.innerHTML = `${fruit.icon}<br><span style="font-size:11px">${fruit.name}</span>`;
-        btn.onclick = () => pickFruit(fruit.id);
+        btn.onclick = () => handlePickFruit(fruit.id);
         fruitGrid.appendChild(btn);
       });
     }
@@ -914,16 +936,20 @@
 
     function newCustomer() {
       clearInterval(patienceTimer);
-      resetDrink();
-      currentOrder = recipes[Math.floor(Math.random() * recipes.length)];
-      document.getElementById("orderText").textContent = currentOrder.name;
+
+      const order = createNewOrder();
+      document.getElementById("orderText").textContent = order.name;
+
+      resetDrinkUI();
       patience = 100;
       patienceFill.style.width = "100%";
-      statusText.textContent = "Pick the fruit for the order.";
+      statusText.textContent = "Read the order, then press Make Drink.";
       goToOrderView();
+
       patienceTimer = setInterval(() => {
         patience -= 1.2;
         patienceFill.style.width = `${Math.max(patience, 0)}%`;
+
         if (patience <= 0) {
           clearInterval(patienceTimer);
           failOrder("Too slow! The customer left.");
@@ -931,13 +957,7 @@
       }, 180);
     }
 
-    function resetDrink() {
-      selectedFruits = [];
-      cutDone = false;
-      liquid = null;
-      iceAdded = false;
-      blended = false;
-      poured = false;
+    function resetDrinkUI() {
       boardText.textContent = "Empty";
       blenderFill.style.height = "0%";
       cupFill.style.height = "0%";
@@ -946,103 +966,98 @@
       document.getElementById("iceBtn").classList.remove("active");
     }
 
-    function pickFruit(fruitId) {
-      if (selectedFruits.length >= 2) {
-        statusText.textContent = "Only up to 2 fruits for this demo.";
-        return;
-      }
-      selectedFruits.push(fruitId);
-      const names = selectedFruits.map(id => fruits.find(f => f.id === id).name).join(" + ");
-      boardText.textContent = names;
-      statusText.textContent = "Fruit placed on board. Now cut it.";
+    function handlePickFruit(fruitId) {
+      const result = pickFruit(fruitId);
+      statusText.textContent = result.message;
+
+      const names = getCurrentDrink().fruits
+        .map(id => getFruitById(id).name)
+        .join(" + ");
+
+      boardText.textContent = names || "Empty";
     }
 
-    function cutFruit() {
-      if (selectedFruits.length === 0) {
-        statusText.textContent = "Pick fruit first.";
-        return;
+    function handleCutFruit() {
+      const result = cutFruit();
+      statusText.textContent = result.message;
+
+      if (result.ok) {
+        const names = getCurrentDrink().fruits
+          .map(id => getFruitById(id).name)
+          .join(" + ");
+
+        boardText.textContent = "Sliced " + names;
+        blenderFill.style.height = "25%";
       }
-      cutDone = true;
-      boardText.textContent = "Sliced " + selectedFruits.map(id => fruits.find(f => f.id === id).name).join(" + ");
-      statusText.textContent = "Fruit cut. Add water or milk in the blender.";
-      blenderFill.style.height = "25%";
     }
 
-    function addLiquid(type) {
-      if (!cutDone) {
-        statusText.textContent = "Cut the fruit before adding liquid.";
-        return;
+    function handleAddLiquid(type) {
+      const result = addLiquid(type);
+      statusText.textContent = result.message;
+
+      if (result.ok) {
+        document.getElementById("waterBtn").classList.toggle("active", type === "water");
+        document.getElementById("milkBtn").classList.toggle("active", type === "milk");
+        blenderFill.style.height = "45%";
       }
-      liquid = type;
-      document.getElementById("waterBtn").classList.toggle("active", type === "water");
-      document.getElementById("milkBtn").classList.toggle("active", type === "milk");
-      blenderFill.style.height = "45%";
-      statusText.textContent = type === "water" ? "Water added. Add ice next." : "Milk added. Add ice next.";
     }
 
-    function addIce() {
-      if (!liquid) {
-        statusText.textContent = "Add water or milk first.";
-        return;
+    function handleAddIce() {
+      const result = addIce();
+      statusText.textContent = result.message;
+
+      if (result.ok) {
+        document.getElementById("iceBtn").classList.add("active");
+        blenderFill.style.height = "62%";
       }
-      iceAdded = true;
-      document.getElementById("iceBtn").classList.add("active");
-      blenderFill.style.height = "62%";
-      statusText.textContent = "Ice added. Blend the drink.";
     }
 
-    function blendDrink() {
-      if (!iceAdded) {
-        statusText.textContent = "Add ice before blending.";
-        return;
-      }
+    function handleBlend() {
+      const result = blend();
+      statusText.textContent = result.message;
+
+      if (!result.ok) return;
+
       const machine = document.getElementById("blenderMachine");
       machine.classList.add("blending");
       statusText.textContent = "Blending...";
+
       setTimeout(() => {
         machine.classList.remove("blending");
-        blended = true;
         blenderFill.style.height = "80%";
         statusText.textContent = "Drink blended. Pour it into the cup.";
       }, 650);
     }
 
-    function pourCup() {
-      if (!blended) {
-        statusText.textContent = "Blend the drink before pouring.";
-        return;
+    function handlePour() {
+      const result = pour();
+      statusText.textContent = result.message;
+
+      if (result.ok) {
+        cupFill.style.height = "82%";
       }
-      poured = true;
-      cupFill.style.height = "82%";
-      statusText.textContent = "Cup filled. Serve the customer!";
     }
 
-    function serveDrink() {
-      if (!poured) {
-        statusText.textContent = "Pour the drink before serving.";
-        return;
-      }
-
-      const fruitCorrect = arraysMatch([...selectedFruits].sort(), [...currentOrder.fruits].sort());
-      const liquidCorrect = liquid === currentOrder.liquid;
-      const correct = fruitCorrect && liquidCorrect && cutDone && iceAdded && blended && poured;
+    function handleServeDrink() {
+      const result = serve();
 
       clearInterval(patienceTimer);
 
-      if (correct) {
+      if (result.ok) {
         combo += 1;
-        const earned = 20 + combo * 5 + Math.floor(patience / 10);
+        const earned = result.recipe.price + combo * 5 + Math.floor(patience / 10);
         money += earned;
         served += 1;
-        statusText.textContent = `Correct! +$${earned}`;
+        statusText.textContent = `Correct! Served ${result.recipe.name}. +$${earned}`;
         updateHud();
+
         if (served >= targetCustomers) {
           endGame(true);
         } else {
           setTimeout(newCustomer, 900);
         }
       } else {
-        failOrder("Wrong recipe! Check the order carefully.");
+        failOrder(result.message);
       }
     }
 
@@ -1051,6 +1066,9 @@
       combo = 0;
       statusText.textContent = message;
       updateHud();
+
+      resetDrinkLogic();
+
       if (hearts <= 0) {
         endGame(false);
       } else {
@@ -1068,16 +1086,13 @@
 
     function endGame(won) {
       clearInterval(patienceTimer);
+
       document.getElementById("endTitle").textContent = won ? "Shop Closed!" : "Game Over";
       document.getElementById("endSummary").textContent = won
         ? `You served ${served} customers and earned $${money}. Great job!`
         : `You served ${served} customers and earned $${money}. Try again!`;
-      document.getElementById("endModal").classList.remove("hidden");
-    }
 
-    function arraysMatch(a, b) {
-      if (a.length !== b.length) return false;
-      return a.every((value, index) => value === b[index]);
+      document.getElementById("endModal").classList.remove("hidden");
     }
   </script>
 </body>
