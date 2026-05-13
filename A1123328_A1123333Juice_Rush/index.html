@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Night Market Juice Rush</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="gameContainer">
+    <!-- HUD (grid row 1) -->
+    <div id="hud">
+      <div class="hud-left">
+        <span id="hudScore">💰 $0</span>
+        <span id="hudCombo" class="combo-text">🔥 x0</span>
+      </div>
+      <div class="hud-center">
+        <span id="hudCustomers">👤 0/0</span>
+        <span id="hudWave">WAVE 1</span>
+      </div>
+      <div class="hud-right">
+        <span id="hudHearts">❤️❤️❤️</span>
+        <button id="btnPause" class="hud-btn">⏸</button>
+        <button id="btnMute" class="hud-btn">🔊</button>
+      </div>
+    </div>
+    <!-- Canvas (grid row 2) -->
+    <canvas id="gameCanvas"></canvas>
+    <div id="scanlines"></div>
+    <div id="ui-layer">
+      <!-- START SCREEN -->
+      <div id="startScreen" class="overlay">
+        <div class="start-content">
+          <div class="neon-sign">
+            <h1 class="pixel-text game-title">🌙 NIGHT MARKET</h1>
+            <h2 class="pixel-text game-subtitle">JUICE RUSH</h2>
+          </div>
+          <div class="title-emoji">🥤🍌🥭🍓🥑</div>
+          <div class="start-buttons">
+            <button id="btnStart" class="arcade-btn btn-start">🎮 START GAME</button>
+            <button id="btnHowTo" class="arcade-btn btn-howto">📖 HOW TO PLAY</button>
+            <button id="btnRecipes" class="arcade-btn btn-recipes">📋 RECIPE BOOK</button>
+          </div>
+          <p class="start-hint">Press ENTER to start</p>
+        </div>
+      </div>
+
+      <!-- HOW TO PLAY SCREEN -->
+      <div id="howToScreen" class="overlay" style="display:none;">
+        <div class="modal-content">
+          <h2 class="pixel-text">📖 HOW TO PLAY</h2>
+          <div class="howto-steps">
+            <div class="step">1️⃣ Customer orders a juice</div>
+            <div class="step">2️⃣ Click a FRUIT to pick it</div>
+            <div class="step">3️⃣ Click CUT to chop it</div>
+            <div class="step">4️⃣ Add LIQUID (Water/Milk) + ICE</div>
+            <div class="step">5️⃣ Click BLEND to mix</div>
+            <div class="step">6️⃣ Click POUR then SERVE</div>
+            <div class="step">⚠️ Serve before patience runs out!</div>
+          </div>
+          <button id="btnBackFromHowTo" class="arcade-btn btn-back">⬅ BACK</button>
+        </div>
+      </div>
+
+      <!-- RECIPE BOOK SCREEN -->
+      <div id="recipeScreen" class="overlay" style="display:none;">
+        <div class="modal-content">
+          <h2 class="pixel-text">📋 RECIPE BOOK</h2>
+          <div id="recipeList" class="recipe-list"></div>
+          <button id="btnBackFromRecipes" class="arcade-btn btn-back">⬅ BACK</button>
+        </div>
+      </div>
+
+      <!-- PAUSE SCREEN -->
+      <div id="pauseScreen" class="overlay" style="display:none;">
+        <div class="modal-content">
+          <h2 class="pixel-text">⏸ PAUSED</h2>
+          <button id="btnResume" class="arcade-btn btn-start">▶ RESUME</button>
+          <button id="btnQuit" class="arcade-btn btn-back">🏠 QUIT</button>
+        </div>
+      </div>
+
+      <!-- GAME OVER SCREEN -->
+      <div id="gameOverScreen" class="overlay" style="display:none;">
+        <div class="modal-content gameover-content">
+          <h2 class="pixel-text gameover-title">GAME OVER</h2>
+          <div id="finalScore" class="final-score"></div>
+          <div id="finalWave" class="final-wave"></div>
+          <div id="finalHighScore" class="final-highscore"></div>
+          <button id="btnRetry" class="arcade-btn btn-start">🔄 TRY AGAIN</button>
+          <button id="btnMainMenu" class="arcade-btn btn-back">🏠 MAIN MENU</button>
+        </div>
+      </div>
+
+      <!-- GAME PLAY AREA -->
+      <div id="gameArea" style="display:none;">
+        <!-- Customer Area -->
+        <div id="customerArea">
+          <div id="customerSlot" class="customer-slot">
+            <div id="customerSprite" class="customer-sprite"></div>
+            <div id="speechBubble" class="speech-bubble" style="display:none;">
+              <span id="orderText"></span>
+            </div>
+            <div id="patienceBar" class="patience-bar-container">
+              <div id="patienceFill" class="patience-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Work Counter -->
+        <div id="workCounter">
+          <!-- Fruit Tray -->
+          <div class="station" id="fruitTray">
+            <h3 class="station-title">🍎 FRUIT TRAY</h3>
+            <div class="fruit-grid">
+              <button class="fruit-btn" data-fruit="banana">🍌<br><span>Banana</span></button>
+              <button class="fruit-btn" data-fruit="mango">🥭<br><span>Mango</span></button>
+              <button class="fruit-btn" data-fruit="strawberry">🍓<br><span>Strawberry</span></button>
+              <button class="fruit-btn" data-fruit="avocado">🥑<br><span>Avocado</span></button>
+              <button class="fruit-btn" data-fruit="pineapple">🍍<br><span>Pineapple</span></button>
+              <button class="fruit-btn" data-fruit="blueberry">🫐<br><span>Blueberry</span></button>
+            </div>
+          </div>
+
+          <!-- Cutting Board -->
+          <div class="station" id="cuttingBoard">
+            <h3 class="station-title">🔪 CUTTING BOARD</h3>
+            <div id="cuttingArea" class="cutting-area">
+              <span id="cuttingFruit" class="cutting-fruit"></span>
+            </div>
+            <button id="btnCut" class="action-btn btn-cut" disabled>✂️ CUT</button>
+          </div>
+
+          <!-- Blender Station -->
+          <div class="station" id="blenderStation">
+            <h3 class="station-title">🫙 BLENDER</h3>
+            <div id="blenderArea" class="blender-area">
+              <div id="blenderContents" class="blender-contents"></div>
+            </div>
+            <div class="blender-controls">
+              <button id="btnWater" class="liquid-btn" disabled>💧 Water</button>
+              <button id="btnMilk" class="liquid-btn" disabled>🥛 Milk</button>
+              <button id="btnIce" class="liquid-btn" disabled>🧊 Ice</button>
+            </div>
+            <button id="btnBlend" class="action-btn btn-blend" disabled>🌀 BLEND</button>
+          </div>
+
+          <!-- Cup Station -->
+          <div class="station" id="cupStation">
+            <h3 class="station-title">🥤 CUP STATION</h3>
+            <div id="cupArea" class="cup-area">
+              <span id="cupContents" class="cup-contents"></span>
+            </div>
+            <div class="cup-controls">
+              <button id="btnPour" class="action-btn btn-pour" disabled>⬇️ POUR</button>
+              <button id="btnServe" class="action-btn btn-serve" disabled>🍹 SERVE</button>
+            </div>
+          </div>
+
+          <!-- Trash -->
+          <button id="btnTrash" class="action-btn btn-trash">🗑️ TRASH ALL</button>
+        </div>
+      </div>
+
+      <!-- WAVE BANNER -->
+      <div id="waveBanner" class="wave-banner" style="display:none;">
+        <span class="pixel-text" id="waveBannerText"></span>
+      </div>
+
+      <!-- SERVE RESULT -->
+      <div id="serveResult" class="serve-result" style="display:none;">
+        <span id="serveResultText"></span>
+      </div>
+    </div>
+  </div>
+  <script src="gameobject.js"></script>
+  <script src="recipedata.js"></script>
+  <script src="customer.js"></script>
+  <script src="audiomanager.js"></script>
+  <script src="particle.js"></script>
+  <script src="game.js"></script>
+  <script>
+    const game = new Game(document.getElementById('gameCanvas'));
+    window.game = game;
+    game.start();
+  </script>
+</body>
+</html>
